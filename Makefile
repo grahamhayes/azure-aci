@@ -3,6 +3,12 @@ LINTER_BIN ?= golangci-lint
 GO111MODULE := on
 export GO111MODULE
 
+DOCKER_IMAGE := virtual-kubelet-azure
+VERSION          := $(shell git describe --tags --always --dirty="-dev")
+DATE             := $(shell date -u '+%Y-%m-%d-%H:%M UTC')
+VERSION_FLAGS    := -ldflags='-X "main.buildVersion=$(VERSION)" -X "main.buildTime=$(DATE)"'
+
+
 TEST_CREDENTIALS_DIR ?= $(PWD)/.azure
 TEST_CREDENTIALS_JSON ?= $(TEST_CREDENTIALS_DIR)/credentials.json
 TEST_LOGANALYTICS_JSON ?= $(TEST_CREDENTIALS_DIR)/loganalytics.json
@@ -10,6 +16,10 @@ export TEST_CREDENTIALS_JSON TEST_LOGANALYTICS_JSON
 
 .PHONY: build
 build: bin/virtual-kubelet
+
+safebuild:
+	@echo "Building..."
+	$Q docker build --build-arg BUILD_TAGS="$(VK_BUILD_TAGS)" -t $(DOCKER_IMAGE):$(VERSION) .
 
 .PHONY: clean
 clean: files := bin/virtual-kubelet
