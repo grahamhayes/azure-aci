@@ -166,9 +166,7 @@ func NewACIProvider(config string, rm *manager.ResourceManager, nodeName, operat
 		}
 
 		azAuth = auth
-	}
-
-	if acsFilepath := os.Getenv("ACS_CREDENTIAL_LOCATION"); acsFilepath != "" {
+	} else if acsFilepath := os.Getenv("ACS_CREDENTIAL_LOCATION"); acsFilepath != "" {
 		acsCredential, err := NewAcsCredential(acsFilepath)
 		if err != nil {
 			return nil, err
@@ -195,22 +193,16 @@ func NewACIProvider(config string, rm *manager.ResourceManager, nodeName, operat
 				p.vnetResourceGroup = p.resourceGroup
 			}
 		}
-	}
+	} else if clientID := os.Getenv("AZURE_CLIENT_ID"); clientID != "" {
 
-	if clientID := os.Getenv("AZURE_CLIENT_ID"); clientID != "" {
-		azAuth.ClientID = clientID
-	}
-
-	if clientSecret := os.Getenv("AZURE_CLIENT_SECRET"); clientSecret != "" {
-		azAuth.ClientSecret = clientSecret
-	}
-
-	if tenantID := os.Getenv("AZURE_TENANT_ID"); tenantID != "" {
-		azAuth.TenantID = tenantID
-	}
-
-	if subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID"); subscriptionID != "" {
-		azAuth.SubscriptionID = subscriptionID
+		azAuth = client.NewAuthentication(
+			"",
+			os.Getenv("AZURE_CLIENT_ID"),
+			os.Getenv("AZURE_CLIENT_SECRET"),
+			os.Getenv("AZURE_SUBSCRIPTION_ID"),
+			os.Getenv("AZURE_TENANT_ID"))
+			p.vnetName = "aciina-aks-aci-sample"
+			p.vnetResourceGroup = "aciina-aks-aci-sample-rg"
 	}
 
 	p.extraUserAgent = os.Getenv("ACI_EXTRA_USER_AGENT")
